@@ -1,0 +1,190 @@
+import {
+  CircleAlert,
+  Droplets,
+  MapPin,
+  Palette,
+  Package,
+  Ruler,
+  Shirt,
+  Snowflake,
+  Tag,
+  Weight,
+} from "lucide-react";
+import { MatchBadge } from "./MatchBadge";
+import { getEffectivePrice } from "@/lib/catalog";
+import type { Recommendation } from "@/lib/types";
+
+export function ProductCard({ rec }: { rec: Recommendation }) {
+  const { group: g, variant: v, tag, stockStatus } = rec;
+
+  const effective = getEffectivePrice(v);
+  const hasDiscount = v.discount_pct > 0;
+  const otherSizes = g.sizes.filter((s) => String(s) !== String(v.size));
+  const otherColors = g.colors.filter((c) => c.toLowerCase() !== v.color.toLowerCase());
+  const fitTag = (["womens", "mens", "unisex", "kids"] as const).find((t) =>
+    v.tags.includes(t),
+  );
+  const fitLabel =
+    fitTag === "womens"
+      ? "Women's"
+      : fitTag === "mens"
+        ? "Men's"
+        : fitTag === "unisex"
+          ? "Unisex"
+          : fitTag === "kids"
+            ? "Kids"
+            : null;
+
+  return (
+    <article className="rounded-2xl border-2 border-border bg-card p-4 shadow-sm">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {g.brand} · {prettyCategory(g.category)}
+            {fitLabel && <> · <span className="font-bold">{fitLabel}</span></>}
+          </p>
+          <h3 className="mt-0.5 text-lg font-bold leading-tight">{g.name}</h3>
+        </div>
+        <MatchBadge tag={tag} />
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-baseline gap-2">
+        <p className="text-2xl font-black tabular-nums">CHF {effective.toFixed(2)}</p>
+        {hasDiscount && (
+          <>
+            <p className="text-sm font-semibold text-muted-foreground line-through tabular-nums">
+              CHF {v.price_chf.toFixed(2)}
+            </p>
+            <span className="inline-flex items-center gap-1 rounded-full border-2 border-foreground/40 bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+              <Tag className="size-3" aria-hidden="true" /> -{v.discount_pct}%
+            </span>
+          </>
+        )}
+      </div>
+
+      <StockBadge status={stockStatus} />
+
+      <p className="mt-3 rounded-lg bg-muted px-3 py-2 text-sm leading-snug text-foreground">
+        {g.description}
+      </p>
+
+      <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
+        <Spec icon={Ruler} label="Sizes" value={g.sizes.join(", ")} />
+        <Spec icon={Palette} label="Colours" value={g.colors.join(", ")} />
+        <Spec icon={Weight} label="Weight" value={g.weight_g ? `${g.weight_g} g` : "—"} />
+        <Spec
+          icon={Droplets}
+          label="Waterproof"
+          value={g.waterproof_rating_mm ? `${g.waterproof_rating_mm} mm` : "—"}
+        />
+        <Spec
+          icon={Snowflake}
+          label="Temp rating"
+          value={g.temp_rating_c !== null ? `${g.temp_rating_c}°C` : "—"}
+        />
+        <Spec icon={Shirt} label="Material" value={g.material || "—"} />
+        <Spec icon={MapPin} label="Find it" value={`${g.zone_name} · ${g.aisle}`} />
+        <Spec icon={Package} label="Stock" value={`${v.stock_front} front / ${v.stock_total} total`} />
+      </dl>
+
+      {(otherSizes.length > 0 || otherColors.length > 0) && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          <span className="font-semibold">Other variants available:</span>{" "}
+          {otherSizes.length > 0 && <>sizes {otherSizes.join(", ")}</>}
+          {otherSizes.length > 0 && otherColors.length > 0 && " · "}
+          {otherColors.length > 0 && <>colours {otherColors.join(", ")}</>}
+        </p>
+      )}
+
+      {rec.matchReasons.length > 0 && (
+        <div className="mt-3">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Match reasons
+          </p>
+          <ul className="mt-1 space-y-1 text-xs">
+            {rec.matchReasons.slice(0, 4).map((r) => (
+              <li key={r} className="flex gap-1.5">
+                <span aria-hidden="true">✓</span>
+                <span>{r}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {rec.tradeoffs.length > 0 && (
+        <div className="mt-3 rounded-lg border-2 border-dashed border-foreground/40 bg-accent/40 px-3 py-2">
+          <p className="text-[10px] font-bold uppercase tracking-wider">
+            Trade-offs
+          </p>
+          <ul className="mt-1 space-y-1 text-xs">
+            {rec.tradeoffs.slice(0, 4).map((t) => (
+              <li key={t} className="flex gap-1.5">
+                <span aria-hidden="true">!</span>
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="mt-3 flex items-start gap-2 rounded-lg border-2 border-dashed border-foreground/30 bg-muted px-3 py-2 text-sm">
+        <span className="inline-flex shrink-0 items-center rounded-md border-2 border-foreground/40 bg-card px-2 py-0.5 text-xs font-black tabular-nums">
+          {rec.score} pts
+        </span>
+        <p className="min-w-0 leading-snug">
+          <span className="font-semibold">Why: </span>
+          {rec.reason}
+        </p>
+      </div>
+    </article>
+  );
+}
+
+function StockBadge({ status }: { status: Recommendation["stockStatus"] }) {
+  if (status === "ON SHELF") {
+    return (
+      <p className="mt-1 inline-flex items-center gap-1 rounded-md border-2 border-foreground/30 bg-secondary px-2 py-0.5 text-xs font-bold">
+        <Package className="size-3" aria-hidden="true" /> ON SHELF
+      </p>
+    );
+  }
+  if (status === "ASK STAFF") {
+    return (
+      <p className="mt-1 inline-flex items-center gap-1 rounded-md border-2 border-dashed border-foreground/60 bg-accent px-2 py-0.5 text-xs font-bold">
+        <CircleAlert className="size-3" aria-hidden="true" /> ASK STAFF — in back stock
+      </p>
+    );
+  }
+  return (
+    <p className="mt-1 inline-flex items-center gap-1 rounded-md border-2 border-foreground/70 bg-destructive px-2 py-0.5 text-xs font-bold text-destructive-foreground line-through">
+      <CircleAlert className="size-3" aria-hidden="true" /> SOLD OUT
+    </p>
+  );
+}
+
+function prettyCategory(c: string) {
+  return c.replace(/-/g, " ");
+}
+
+function Spec({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Ruler;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start gap-2">
+      <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <div className="min-w-0">
+        <dt className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          {label}
+        </dt>
+        <dd className="truncate font-semibold">{value}</dd>
+      </div>
+    </div>
+  );
+}
