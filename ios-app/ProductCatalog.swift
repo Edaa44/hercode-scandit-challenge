@@ -21,7 +21,7 @@ struct ProductCatalog {
     private let byProductCode: [String: Product]
 
     init(products: [Product]) {
-        self.byProductCode = Dictionary(uniqueKeysWithValues: products.map { ($0.productCode, $0) })
+        self.byProductCode = Dictionary(products.map { ($0.productCode, $0) }) { _, latest in latest }
     }
 
     func product(forCode code: String) -> Product? {
