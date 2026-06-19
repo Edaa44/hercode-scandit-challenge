@@ -82,11 +82,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "TrailAble — Accessible AI Shopping Concierge" },
       { name: "description", content: "Accessible AI shopping concierge for outdoor gear." },
       { name: "author", content: "TrailAble" },
-      { property: "og:title", content: "TrailAble" },
+      { property: "og:title", content: "TrailAble — Accessible AI Shopping Concierge" },
       { property: "og:description", content: "Accessible AI shopping concierge for outdoor gear." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "TrailAble — Accessible AI Shopping Concierge" },
+      { name: "twitter:description", content: "Accessible AI shopping concierge for outdoor gear." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/710dcc42-ff13-4110-9dbf-65937489141a/id-preview-a3fdf30c--6be75333-eb78-49dc-9651-ae113e762a30.lovable.app-1781872754406.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/710dcc42-ff13-4110-9dbf-65937489141a/id-preview-a3fdf30c--6be75333-eb78-49dc-9651-ae113e762a30.lovable.app-1781872754406.png" },
     ],
     links: [
       {

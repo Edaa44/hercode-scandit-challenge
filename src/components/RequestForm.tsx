@@ -5,6 +5,7 @@ import {
   Footprints,
   Leaf,
   Loader2,
+  Mic,
   RotateCcw,
   Search,
   SlidersHorizontal,
@@ -114,6 +115,85 @@ export function RequestForm({
   const sizeId = useId();
   const priceId = useId();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const recognitionRef = useRef<any>(null);
+  const finalTextRef = useRef<string>("");
+  const [listening, setListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const SR =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+    if (!SR) setSpeechSupported(false);
+  }, []);
+
+  const stopListening = () => {
+    try {
+      recognitionRef.current?.stop();
+    } catch {
+      /* ignore */
+    }
+    setListening(false);
+  };
+
+  const startListening = () => {
+    if (typeof window === "undefined") return;
+    const SR =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+    if (!SR) {
+      setSpeechSupported(false);
+      return;
+    }
+    if (listening) {
+      stopListening();
+      return;
+    }
+    const recognition = new SR();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = navigator.language || "en-US";
+    finalTextRef.current = value.text;
+    let didSubmit = false;
+
+    recognition.onresult = (event: any) => {
+      let interim = "";
+      let finalAddition = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const res = event.results[i];
+        if (res.isFinal) finalAddition += res[0].transcript;
+        else interim += res[0].transcript;
+      }
+      if (finalAddition) {
+        finalTextRef.current = (finalTextRef.current + " " + finalAddition).trim();
+      }
+      const live = (finalTextRef.current + " " + interim).trim();
+      onChange({ ...value, text: live });
+      if (finalAddition && !didSubmit) {
+        didSubmit = true;
+        try {
+          recognition.stop();
+        } catch {
+          /* ignore */
+        }
+        // Defer so the latest onChange has been committed.
+        window.setTimeout(() => onSubmit(), 50);
+      }
+    };
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
+
+    recognitionRef.current = recognition;
+    try {
+      recognition.start();
+      setListening(true);
+    } catch {
+      setListening(false);
+    }
+  };
+
+  useEffect(() => () => stopListening(), []);
 
   const [phIndex, setPhIndex] = useState(() =>
     Math.floor(Math.random() * PROMPT_EXAMPLES.length),
@@ -172,7 +252,7 @@ export function RequestForm({
         </p>
       </div>
 
-      <div>
+      <div className="relative">
         <label htmlFor={textId} className="sr-only">
           What are you shopping for today?
         </label>
@@ -190,8 +270,25 @@ export function RequestForm({
           rows={3}
           placeholder={placeholder}
           aria-label="What are you shopping for today?"
-          className="w-full resize-none rounded-2xl border-2 border-border bg-card px-4 py-4 text-base leading-relaxed shadow-sm outline-none transition placeholder:text-muted-foreground/80 focus:border-primary focus:ring-4 focus:ring-primary/15"
+          className="w-full resize-none rounded-2xl border-2 border-border bg-card px-4 py-4 pr-14 text-base leading-relaxed shadow-sm outline-none transition placeholder:text-muted-foreground/80 focus:border-primary focus:ring-4 focus:ring-primary/15"
         />
+        {speechSupported && (
+          <button
+            type="button"
+            onClick={startListening}
+            aria-label={listening ? "Spracheingabe stoppen" : "Spracheingabe starten"}
+            aria-pressed={listening}
+            title={listening ? "Listening… click to stop" : "Voice input"}
+            className={`absolute right-3 top-3 grid size-10 place-items-center rounded-full border-2 transition ${
+              listening
+                ? "animate-pulse border-red-500 bg-red-500 text-white shadow-md"
+                : "border-border bg-background text-muted-foreground hover:border-primary hover:text-primary"
+            }`}
+          >
+            <Mic className="size-5" aria-hidden="true" />
+            {listening && <span className="sr-only">Listening</span>}
+          </button>
+        )}
       </div>
 
       <button

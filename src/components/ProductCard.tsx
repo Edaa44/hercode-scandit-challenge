@@ -23,6 +23,7 @@ import { speak, usePrefs } from "@/lib/prefs";
 import type { MatchTag, Product, ProductGroup, Recommendation, ScoreLine } from "@/lib/types";
 import { categoryHasFit } from "@/lib/types";
 import { useFavorites, favoriteId } from "@/lib/favorites";
+import { VoiceProductQA } from "@/components/VoiceProductQA";
 import {
   Popover,
   PopoverContent,
@@ -338,6 +339,8 @@ export function ProductCard({ rec }: { rec: Recommendation }) {
             />
           )}
         </div>
+
+        <VoiceProductQA product={v} />
 
         {showAlts && hasAlternatives && (
           <div className="rounded-lg border-2 border-dashed border-border bg-muted/50 px-3 py-2 text-xs">

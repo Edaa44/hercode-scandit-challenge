@@ -35,6 +35,7 @@ import {
 } from "@/lib/catalog";
 import { parseRequestGroups, type RequestGroup } from "@/lib/groups";
 import { usePrefs, speak } from "@/lib/prefs";
+import { playElevenLabs } from "@/services/elevenLabsService";
 import type { Product } from "@/lib/types";
 import { CircleAlert, Volume2, AlertTriangle } from "lucide-react";
 import { Bug } from "lucide-react";
@@ -230,10 +231,14 @@ function ConciergePage() {
     window.setTimeout(() => {
       setSubmitted(form);
       setThinking(false);
-      speak(
-        "I found some matches. Showing your route through the store.",
-        prefs.voiceGuidance,
-      );
+      const reply =
+        "I found some matches. Showing your route through the store.";
+      if (prefs.voiceGuidance) {
+        // ElevenLabs via secure /api/tts-proxy with native fallback baked in.
+        void playElevenLabs(reply);
+      } else {
+        speak(reply, prefs.voiceGuidance);
+      }
     }, 350);
   };
 

@@ -13,6 +13,8 @@ import { Route as ScanRouteImport } from './routes/scan'
 import { Route as PreferencesRouteImport } from './routes/preferences'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiVoiceQaRouteImport } from './routes/api/voice-qa'
+import { Route as ApiTtsProxyRouteImport } from './routes/api/tts-proxy'
 
 const ScanRoute = ScanRouteImport.update({
   id: '/scan',
@@ -34,18 +36,32 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiVoiceQaRoute = ApiVoiceQaRouteImport.update({
+  id: '/api/voice-qa',
+  path: '/api/voice-qa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTtsProxyRoute = ApiTtsProxyRouteImport.update({
+  id: '/api/tts-proxy',
+  path: '/api/tts-proxy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/favorites': typeof FavoritesRoute
   '/preferences': typeof PreferencesRoute
   '/scan': typeof ScanRoute
+  '/api/tts-proxy': typeof ApiTtsProxyRoute
+  '/api/voice-qa': typeof ApiVoiceQaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/favorites': typeof FavoritesRoute
   '/preferences': typeof PreferencesRoute
   '/scan': typeof ScanRoute
+  '/api/tts-proxy': typeof ApiTtsProxyRoute
+  '/api/voice-qa': typeof ApiVoiceQaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +69,34 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/preferences': typeof PreferencesRoute
   '/scan': typeof ScanRoute
+  '/api/tts-proxy': typeof ApiTtsProxyRoute
+  '/api/voice-qa': typeof ApiVoiceQaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/favorites' | '/preferences' | '/scan'
+  fullPaths:
+    | '/'
+    | '/favorites'
+    | '/preferences'
+    | '/scan'
+    | '/api/tts-proxy'
+    | '/api/voice-qa'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/favorites' | '/preferences' | '/scan'
-  id: '__root__' | '/' | '/favorites' | '/preferences' | '/scan'
+  to:
+    | '/'
+    | '/favorites'
+    | '/preferences'
+    | '/scan'
+    | '/api/tts-proxy'
+    | '/api/voice-qa'
+  id:
+    | '__root__'
+    | '/'
+    | '/favorites'
+    | '/preferences'
+    | '/scan'
+    | '/api/tts-proxy'
+    | '/api/voice-qa'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +104,8 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   PreferencesRoute: typeof PreferencesRoute
   ScanRoute: typeof ScanRoute
+  ApiTtsProxyRoute: typeof ApiTtsProxyRoute
+  ApiVoiceQaRoute: typeof ApiVoiceQaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +138,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/voice-qa': {
+      id: '/api/voice-qa'
+      path: '/api/voice-qa'
+      fullPath: '/api/voice-qa'
+      preLoaderRoute: typeof ApiVoiceQaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tts-proxy': {
+      id: '/api/tts-proxy'
+      path: '/api/tts-proxy'
+      fullPath: '/api/tts-proxy'
+      preLoaderRoute: typeof ApiTtsProxyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +160,8 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   PreferencesRoute: PreferencesRoute,
   ScanRoute: ScanRoute,
+  ApiTtsProxyRoute: ApiTtsProxyRoute,
+  ApiVoiceQaRoute: ApiVoiceQaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
