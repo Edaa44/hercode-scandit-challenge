@@ -9,6 +9,7 @@ final class SparkScanViewController: UIViewController, SparkScanListener {
     private var context: DataCaptureContext?
 
     private func setupContext() {
+        guard context == nil else { return }
         let licenseKey = (Bundle.main.object(forInfoDictionaryKey: "SCANDIT_LICENSE_KEY") as? String)?
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard let licenseKey, !licenseKey.isEmpty else {

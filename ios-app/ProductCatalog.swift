@@ -21,17 +21,17 @@ struct ProductCatalog {
     private let byProductCode: [String: Product]
 
     init(products: [Product]) {
-        var seen = Set<String>()
-        var duplicates = Set<String>()
-        for product in products {
-            if !seen.insert(product.productCode).inserted {
-                duplicates.insert(product.productCode)
+        var byCode: [String: Product] = [:]
+        for (index, product) in products.enumerated() {
+            if let existing = byCode[product.productCode] {
+                print(
+                    "Warning: duplicate product_code '\(product.productCode)' at index \(index). " +
+                    "Keeping latest product_id '\(product.productID)' over '\(existing.productID)'."
+                )
             }
+            byCode[product.productCode] = product
         }
-        if !duplicates.isEmpty {
-            print("Warning: duplicate product_code values found in products.json: \(duplicates.sorted())")
-        }
-        self.byProductCode = Dictionary(products.map { ($0.productCode, $0) }) { _, latest in latest }
+        self.byProductCode = byCode
     }
 
     func product(forCode code: String) -> Product? {
