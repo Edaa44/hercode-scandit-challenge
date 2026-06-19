@@ -12,8 +12,8 @@ This folder contains a minimal SwiftUI app scaffold that integrates **Scandit Sp
    - Add products: `ScanditBarcodeCapture`, `ScanditCaptureCore`
 5. Add camera permission to `Info.plist`:
    - `NSCameraUsageDescription` = `Scan barcodes to show product details in store.`
-6. In `SparkScanViewController.swift`, replace:
-   - `-- ENTER YOUR SCANDIT LICENSE KEY HERE --`
+6. Add your Scandit license key in `Info.plist`:
+   - `SCANDIT_LICENSE_KEY` = `YOUR_LICENSE_KEY`
 
 ## Symbologies enabled
 

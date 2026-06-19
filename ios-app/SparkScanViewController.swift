@@ -2,11 +2,16 @@ import UIKit
 import ScanditBarcodeCapture
 
 final class SparkScanViewController: UIViewController, SparkScanListener {
-    private let catalog = ProductCatalog.loadFromBundle()
+    private var catalog = ProductCatalog(products: [])
     private let onScan: (Product?, String) -> Void
 
     private lazy var context: DataCaptureContext = {
-        DataCaptureContext.initialize(licenseKey: "-- ENTER YOUR SCANDIT LICENSE KEY HERE --")
+        let licenseKey = (Bundle.main.object(forInfoDictionaryKey: "SCANDIT_LICENSE_KEY") as? String)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let licenseKey, !licenseKey.isEmpty else {
+            fatalError("SCANDIT_LICENSE_KEY is missing in Info.plist.")
+        }
+        DataCaptureContext.initialize(licenseKey: licenseKey)
         return DataCaptureContext.shared
     }()
 
@@ -31,6 +36,11 @@ final class SparkScanViewController: UIViewController, SparkScanListener {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        do {
+            catalog = try ProductCatalog.loadFromBundle()
+        } catch {
+            print("Catalog loading error: \(error.localizedDescription)")
+        }
         setupRecognition()
     }
 
