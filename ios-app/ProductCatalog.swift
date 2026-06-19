@@ -21,6 +21,16 @@ struct ProductCatalog {
     private let byProductCode: [String: Product]
 
     init(products: [Product]) {
+        var seen = Set<String>()
+        var duplicates = Set<String>()
+        for product in products {
+            if !seen.insert(product.productCode).inserted {
+                duplicates.insert(product.productCode)
+            }
+        }
+        if !duplicates.isEmpty {
+            print("Warning: duplicate product_code values found in products.json: \(duplicates.sorted())")
+        }
         self.byProductCode = Dictionary(products.map { ($0.productCode, $0) }) { _, latest in latest }
     }
 
