@@ -4,16 +4,19 @@ import ScanditBarcodeCapture
 final class SparkScanViewController: UIViewController, SparkScanListener {
     private var catalog = ProductCatalog(products: [])
     private let onScan: (Product?, String) -> Void
+    private let onCatalogLoadError: (String) -> Void
 
-    private lazy var context: DataCaptureContext = {
+    private var context: DataCaptureContext?
+
+    private func setupContext() {
         let licenseKey = (Bundle.main.object(forInfoDictionaryKey: "SCANDIT_LICENSE_KEY") as? String)?
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard let licenseKey, !licenseKey.isEmpty else {
             fatalError("SCANDIT_LICENSE_KEY is missing in Info.plist.")
         }
         DataCaptureContext.initialize(licenseKey: licenseKey)
-        return DataCaptureContext.shared
-    }()
+        context = DataCaptureContext.shared
+    }
 
     private lazy var sparkScan: SparkScan = {
         let settings = SparkScanSettings()
@@ -25,8 +28,12 @@ final class SparkScanViewController: UIViewController, SparkScanListener {
 
     private var sparkScanView: SparkScanView?
 
-    init(onScan: @escaping (Product?, String) -> Void) {
+    init(
+        onScan: @escaping (Product?, String) -> Void,
+        onCatalogLoadError: @escaping (String) -> Void
+    ) {
         self.onScan = onScan
+        self.onCatalogLoadError = onCatalogLoadError
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -36,10 +43,11 @@ final class SparkScanViewController: UIViewController, SparkScanListener {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupContext()
         do {
             catalog = try ProductCatalog.loadFromBundle()
         } catch {
-            print("Catalog loading error: \(error.localizedDescription)")
+            onCatalogLoadError(error.localizedDescription)
         }
         setupRecognition()
     }
@@ -55,6 +63,7 @@ final class SparkScanViewController: UIViewController, SparkScanListener {
     }
 
     private func setupRecognition() {
+        guard let context else { return }
         sparkScan.addListener(self)
         sparkScanView = SparkScanView(
             parentView: view,

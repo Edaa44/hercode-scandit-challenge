@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var scannedCode: String = ""
     @State private var scannedProduct: Product?
+    @State private var catalogLoadError: String?
 
     var body: some View {
         ZStack {
@@ -37,14 +38,24 @@ struct ContentView: View {
                         .foregroundStyle(.red)
                 }
 
+                if let catalogLoadError {
+                    Text("Dataset load error: \(catalogLoadError)")
+                        .foregroundStyle(.red)
+                }
+
                 Spacer()
             }
             .padding()
 
-            SparkScanContainer { product, rawCode in
-                scannedCode = rawCode
-                scannedProduct = product
-            }
+            SparkScanContainer(
+                onScan: { product, rawCode in
+                    scannedCode = rawCode
+                    scannedProduct = product
+                },
+                onCatalogLoadError: { message in
+                    catalogLoadError = message
+                }
+            )
             .allowsHitTesting(true)
         }
     }
@@ -52,9 +63,10 @@ struct ContentView: View {
 
 private struct SparkScanContainer: UIViewControllerRepresentable {
     let onScan: (Product?, String) -> Void
+    let onCatalogLoadError: (String) -> Void
 
     func makeUIViewController(context: Context) -> SparkScanViewController {
-        SparkScanViewController(onScan: onScan)
+        SparkScanViewController(onScan: onScan, onCatalogLoadError: onCatalogLoadError)
     }
 
     func updateUIViewController(_ uiViewController: SparkScanViewController, context: Context) {}
